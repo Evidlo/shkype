@@ -1,5 +1,7 @@
 # shkype
 
+![](shkype.jpg)
+
 VOIP for bash
 
 ## Dependencies
