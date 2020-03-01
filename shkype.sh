@@ -6,6 +6,7 @@ PORT_VIDEO=8001
 
 selected_contact=""
 pending_request=/tmp/pending_request
+rm $pending_request
 
 interface=$(ip route|awk '/default/{print $5;exit}')
 ip_addr=$(ip addr show $interface|awk '/inet/{split($2, a, "/");print a[1];exit}')
@@ -40,11 +41,10 @@ function contacts() {
     fi
 }
 
-foo "calling contacts"
-contacts &
-
 while true
 do
+    foo "calling contacts"
+    contacts &
 
     # accept/request
     foo "waiting request"
@@ -64,8 +64,10 @@ do
         nc -l -p $PORT_VIDEO &
         nc $incoming_call $PORT_STATUS <<< $ip_addr
 
-        # FIXME
+        # FIXME - max 2 minute call
         sleep 120
+        killall nc
+        killall mpv
 
     else # request (receiver)
         foo "incoming call"
@@ -77,8 +79,10 @@ do
             (nc -l -p $PORT_STATUS; mpv /dev/video0 --fps=15 --vo=tct 2>/dev/null | nc $incoming_call $PORT_VIDEO) &
             nc $incoming_call $PORT_STATUS <<< $ip_addr
 
-            # FIXME
+            # FIXME - max 2 minute call
             sleep 120
+            killall nc
+            killall mpv
         else
             echo foop
         fi
